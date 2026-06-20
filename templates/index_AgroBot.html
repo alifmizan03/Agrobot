@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroBot - Pertanian Q&A</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap">
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #eef7ec;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .banner {
+        width: 100%;
+        max-width: 300px;       /* hadkan lebar banner */
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .banner img {
+        width: 30%;            /* ikut lebar container */
+        height: auto;           /* kekalkan nisbah asal */
+        border-radius: 15px;
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+        display: block;
+        margin: 0 auto;         /* tengahkan gambar */
+    }
+
+        /* Split Container Styling */
+        .split-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1200px;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .module-container {
+            flex: 1;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: fit-content;
+        }
+
+        /* Header Styling */
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .header h2 {
+            font-size: 24px;
+            margin: 0;
+            color: #2e7d32;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #555;
+        }
+
+        #user-stats {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        /* Chat Box */
+        .chat-box {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: #f6fbf4;
+            margin-bottom: 20px;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        .user, .bot {
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 25px;
+            margin: 10px 0;
+            max-width: 70%;
+            word-wrap: break-word;
+            font-size: 16px;
+        }
+
+        .user {
+            background-color: #b2dfdb;
+            color: #004d40;
+            align-self: flex-end;
+        }
+
+        .bot {
+            background-color: #dcedc8;
+            color: #558b2f;
+            align-self: flex-start;
+        }
+
+        /* Input Section */
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 15px;
+            width: 100%;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 25px;
+            outline: none;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        button {
+            background-color: #43a047;
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2e7d32;
+        }
+
+        /* Quiz Section */
+        #quiz-container h3 {
+            font-size: 24px;
+            color: #4caf50;
+            margin-bottom: 15px;
+        }
+
+        #quiz-topic {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 25px;
+            outline: none;
+            font-size: 16px;
+            margin-bottom: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        #quiz-container button {
+            background-color: #4caf50;
+        }
+
+        #quiz-question-container {
+            text-align: center;
+            margin-top: 20px;
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 10px;
+            width: 100%;
+        }
+
+        .choice-label {
+            display: block;
+            margin: 10px 0;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+   <!-- Banner -->
+<div class="banner">
+    <img src="{{ url_for('static', filename='icons/AgroBot.jpg') }}" alt="AgroBot Icon">
+</div>
+
+    <div class="split-container">
+
+        <!-- Chat Module -->
+        <div id="chat-container" class="module-container">
+            <div class="header">
+                <h2>AgroBot – Pakar Pertanian Anda 🌾</h2>
+                <p>Tanya apa sahaja tentang tanaman, baja, tanah, suhu, atau masalah pokok.</p>
+                <div id="user-stats">
+                    <p>Points: <span id="user-points">0</span></p>
+                    <p>Stickers: <span id="user-stickers">None</span></p>
+                </div>
+            </div>
+
+            <div class="chat-box" id="chat-box"></div>
+
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="Contoh: Apa baja sesuai untuk cili?" onkeydown="checkEnter(event)">
+                <button onclick="sendMessage()">Send 🌱</button>
+            </div>
+        </div>
+
+        <!-- Quiz Module -->
+        <div id="quiz-container" class="module-container">
+            <h3>Kuiz Pertanian 🌿</h3>
+            <input type="text" id="quiz-topic" placeholder="Contoh: tanah, baja, sayuran, penyakit tanaman">
+            <button id="generate-quiz-button" onclick="generateQuiz()">Generate Soalan</button>
+
+            <div id="quiz-question-container" style="display: none;">
+                <p id="quiz-question"></p>
+                <div id="quiz-choices"></div>
+                <button id="submit-answer-button" style="display: none;" onclick="submitQuizAnswer()">Submit</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript (same as original, reused) -->
+    <script>
+        let currentCorrectAnswer = "";
+
+        async function generateQuiz() {
+            const topic = document.getElementById("quiz-topic").value;
+            if (!topic) {
+                alert("Please enter a topic!");
+                return;
+            }
+
+            const response = await fetch("/generate_quiz", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ topic: topic })
+            });
+
+            const quizData = await response.json();
+            document.getElementById("quiz-question").innerText = quizData.question;
+
+            const choicesContainer = document.getElementById("quiz-choices");
+            choicesContainer.innerHTML = "";
+            const labels = ["A", "B", "C", "D"];
+
+            quizData.choices.slice(0, 4).forEach((choice, index) => {
+                const choiceElement = document.createElement("div");
+                choiceElement.classList.add("choice-label");
+                const formattedChoice = choice.replace(/^[A-D]\)\s*/, "").trim();
+                choiceElement.innerHTML = `<input type="radio" name="quiz-choice" value="${formattedChoice}"> ${labels[index]}) ${formattedChoice}`;
+                choicesContainer.appendChild(choiceElement);
+            });
+
+            currentCorrectAnswer = quizData.correct_answer.trim();
+
+            document.getElementById("quiz-question-container").style.display = "block";
+            document.getElementById("submit-answer-button").style.display = "inline-block";
+        }
+
+        async function submitQuizAnswer() {
+            const selectedChoice = document.querySelector('input[name="quiz-choice"]:checked');
+            if (!selectedChoice) {
+                alert("Please select an answer!");
+                return;
+            }
+
+            const answer = selectedChoice.value.trim();
+            const username = "guest";
+
+            const response = await fetch("/quiz_answer", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    answer: answer,
+                    correct_answer: currentCorrectAnswer,
+                    username: username
+                })
+            });
+
+            const result = await response.json();
+            alert(result.message);
+
+            if (result.points !== undefined) {
+                document.getElementById("user-points").textContent = result.points;
+            }
+            if (result.stickers) {
+                document.getElementById("user-stickers").textContent = result.stickers;
+            }
+        }
+
+        async function sendMessage() {
+            const userInput = document.getElementById("user-input").value;
+            if (!userInput) return;
+
+            const chatBox = document.getElementById("chat-box");
+            const userMessage = document.createElement("div");
+            userMessage.className = "user";
+            userMessage.textContent = userInput;
+            chatBox.appendChild(userMessage);
+
+            const response = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userInput, username: "guest" })
+            });
+
+            const responseData = await response.json();
+            const botMessage = document.createElement("div");
+            botMessage.className = "bot";
+            botMessage.textContent = responseData.response;
+            chatBox.appendChild(botMessage);
+
+            document.getElementById("user-points").textContent = responseData.points;
+            document.getElementById("user-stickers").textContent = responseData.stickers || "None";
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            document.getElementById("user-input").value = "";
+        }
+    </script>
+</body>
+</html>
